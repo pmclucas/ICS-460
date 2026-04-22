@@ -11,11 +11,13 @@ SYN_THRESHOLD = 100 #pkt
 ICMP_THRESHOLD = 100  #pkt
 WINDOW = 1 #s
 
+
 #VLAN Variables
 
-VLAN10 = "10.10.10"
-VLAN20 = "20.20.20"
-
+VLAN10 = "10.10.1."
+VLAN20 = "10.10.2."
+HARDENED_CONF = "/etc/nftables-hardened.conf"
+OPEN_CONF     = "/etc/nftables-open.conf"
 _Locked_Down = False
 
 #If wiithin 1s we get either a SYN burst or ICMP burst of 100 packets or greater
@@ -40,14 +42,14 @@ tbl = ["sudo", "nft", "-f"]
 #Network swapping function
 
 def __apply_hardened():
-    subprocess.run(tbl + ["/etc/nftables/nftables-hardened.conf"])
+    subprocess.run(tbl + [HARDENED_CONF])
     #Marking the time when the ruleset changed
     with open("/home/pics/logdata/time_of_attk.txt", "w") as fw:
         fw.write(str(time.time()));
     return
 
 def __apply_open():
-    subprocess.run(tbl + ["/etc/nftables/nftables-open.conf"])
+    subprocess.run(tbl + [OPEN_CONF])
     return
 
 def __check_thresh(srcIP):
@@ -98,4 +100,5 @@ if len(sys.argv) > 1 and sys.argv[1] == "reset":
     __apply_open()
     logging.warning("Open ruleset now applied!")
     sys.exit()
-sniff(iface="eth0", promisc = True, store = False, prn=_process_pkt)
+# Sniff all VLAN interfaces, not just eth0
+sniff(iface=["eth1", "eth1.10", "eth1.20"], promisc=True, store=False, prn=_process_pkt)
