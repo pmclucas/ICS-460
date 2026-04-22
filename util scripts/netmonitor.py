@@ -25,7 +25,8 @@ _Locked_Down = False
 #Saving data into monitor.log file within our util scripts folder
 #Everything from this file will be sent there, please access that file
 #To view the current logging of the network
-logging.basicConfig(filename='/util scripts/Log Data/monitor.log', level=logging.INFO)
+logging.basicConfig(filename='/home/pics/logdata/monitor.log', level=logging.INFO)
+
 
 
 #Actual packet counters
@@ -41,7 +42,7 @@ tbl = ["sudo", "nft", "-f"]
 def __apply_hardened():
     subprocess.run(tbl + ["/etc/nftables/nftables-hardened.conf"])
     #Marking the time when the ruleset changed
-    with open ("/util scripts/Log Data/time_of_attk.txt", "w") as fw:
+    with open("/home/pics/logdata/time_of_attk.txt", "w") as fw:
         fw.write(str(time.time()));
     return
 
