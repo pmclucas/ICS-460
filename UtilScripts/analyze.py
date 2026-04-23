@@ -5,7 +5,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from collections import defaultdict
 
-OUTPUT_DIR = "/home/pics/"
+OUTPUT_DIR = "/home/pics/logdata/"
 
 
 # Grab pcap file from command line
@@ -20,7 +20,7 @@ packets = rdpcap(pcap_file)
 #If we got a timestamp for the hardening switch/attack, read it
 atk_time = None
 try:
-    with open(OUTPUT_DIR + "hardening_time.txt","r") as fw:
+    with open(OUTPUT_DIR + "time_of_attk.txt","r") as fw:
         atk_time = float(fw.read())
 except:
     print("No hardening/attack timestamp found, traffic clear, for now...")
@@ -51,6 +51,10 @@ for packet in packets:
     # Chart 1 - top source IPs
 
 def plot_top_srcIPS():
+    #If empty return a message
+    if not src_ip_counts:
+        print("No IP's Found!")
+        return
     top = sorted(src_ip_counts.items(), key=lambda x: x[1], reverse=True)[:10]
     ips, counts = zip(*top)
     plt.figure()
@@ -66,6 +70,10 @@ def plot_top_srcIPS():
 
     # Chart 2 - Packets over time
 def plot_packets_over_time():
+    if not timestamps_allowed and not timestamps_blocked:
+        print("No timestamp data")
+        return
+    
     plt.figure()
     plt.hist(timestamps_allowed, bins=50, color='green', alpha=0.7, label='Allowed')
     plt.hist(timestamps_blocked, bins=50, color='red', alpha=0.7, label='Blocked')
@@ -102,4 +110,3 @@ print(f"\n[Summary]")
 print(f"  Total packets  : {len(packets)}")
 print(f"  Allowed        : {allowed}")
 print(f"  Blocked        : {blocked}")
-plt.show()

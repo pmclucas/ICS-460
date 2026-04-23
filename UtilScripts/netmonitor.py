@@ -46,6 +46,10 @@ def __apply_hardened():
     #Marking the time when the ruleset changed
     with open("/home/pics/logdata/time_of_attk.txt", "w") as fw:
         fw.write(str(time.time()));
+    
+    #Auto run our analyze script
+
+    subprocess.Popen(["python3", "/home/pics/ICS-460/UtilScripts/analyze.py", "/home/pics/logdata/capture.pcap"])
     return
 
 def __apply_open():
@@ -68,7 +72,7 @@ def __check_thresh(srcIP):
 
         if(_syn_count[srcIP] >= SYN_THRESHOLD or _icmp_count[srcIP] >= ICMP_THRESHOLD):
             #Logging the attack
-            logging.warning(f"Attack detected! From {srcIP} - SYN Count: {_syn_count[srcIP]}")
+            logging.warning(f"Attack detected! From {srcIP} - SYN: {_syn_count[srcIP]} ICMP: {_icmp_count[srcIP]}")
 
             if(_Locked_Down == False):
                 __apply_hardened()
@@ -76,21 +80,24 @@ def __check_thresh(srcIP):
                 _Locked_Down = True
 
 
-
+#Adding configuration, getting false positives from home desktop
+#For this demo we only sniff on VLAN
 def _process_pkt(packet):
     
     if not packet.haslayer(IP):
         return
-    
 
     global _syn_count, _icmp_count,_Locked_Down
     srcIP = packet[IP].src
-    
-    if(packet.haslayer(TCP) and packet[TCP].flags == 'S'):
+    #Now we are only monitoring the VLAN for our demo
+
+    if not (srcIP.startswith(VLAN10) or srcIP.startswith(VLAN20)):
+        return
+    if packet.haslayer(TCP) and packet[TCP].flags =='S':
         _syn_count[srcIP] += 1
 
-    if(packet.haslayer(ICMP)):
-        _icmp_count[srcIP] +=1
+    if packet.haslayer(ICMP):
+            _icmp_count[srcIP] += 1
 
     __check_thresh(srcIP)
 
@@ -100,5 +107,8 @@ if len(sys.argv) > 1 and sys.argv[1] == "reset":
     __apply_open()
     logging.warning("Open ruleset now applied!")
     sys.exit()
-# Sniff all VLAN interfaces, not just eth0
+# Sniff all VLAN interfaces
 sniff(iface=["eth1", "eth1.10", "eth1.20"], promisc=True, store=False, prn=_process_pkt)
+
+
+
